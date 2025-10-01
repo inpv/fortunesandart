@@ -14,21 +14,36 @@ from src import main as mod
     ],
 )
 def test_render_image_variants(text, expect_green):
+    """
+    Smoke-test the image renderer.
+
+    - For a small ASCII-art input we expect a valid PNG whose top-left pixel
+      is black (the background) and that at least some pixels are green-ish
+      (the text color).
+    - For an empty input we still expect a valid PNG but no green text.
+    """
     bot = mod.FortuneBot("tok", "@c")
+
+    # Render to PNG bytes
     png = bot.render_image(text)
+    # Basic sanity: PNG header present and type is bytes
     assert isinstance(png, (bytes, bytearray))
     assert png[:8] == b"\x89PNG\r\n\x1a\n"
 
+    # Load image and assert background is black in the top-left corner.
     img = Image.open(io.BytesIO(png)).convert("RGB")
-    # top-left should be background (black)
     assert img.getpixel((0, 0)) == (0, 0, 0)
 
+    # If we expect green text, scan a coarse grid of pixels and assert at
+    # least one is green-ish. We sample (not exhaustive) to keep test fast.
     if expect_green:
         w, h = img.size
         found = False
+        # Step by roughly 20 samples along each axis (or 1 if very small)
         for x in range(0, w, max(1, w // 20)):
             for y in range(0, h, max(1, h // 20)):
                 r, g, b = img.getpixel((x, y))
+                # "green-ish" heuristic: green channel high, red+blue lowish
                 if g > 100 and r < 80 and b < 80:
                     found = True
                     break
@@ -45,9 +60,19 @@ def test_render_image_variants(text, expect_green):
     ],
 )
 def test_get_output_variants(request, runner_fixture, expected_substr):
+    """
+    Verify get_output() handles different subprocess outcomes.
+
+    - 'runner_ok' simulates a process that prints to stdout (we expect 'hello').
+    - 'runner_no_stdout' simulates no stdout but stderr present (we expect 'stderr'
+      to appear in the returned diagnostic string).
+    """
     runner = request.getfixturevalue(runner_fixture)
     bot = mod.FortuneBot("tok", "@c", runner=runner)
+
     out = bot.get_output()
+    # We only assert the presence of an expected substring rather than an exact
+    # match to keep the test robust to formatting changes.
     assert expected_substr in out
 
 
@@ -180,7 +205,12 @@ def test_textbbox_fallback_path(monkeypatch):
     Simulate an older Pillow where ImageDraw.textbbox raises AttributeError.
     Ensure render_image still works (fallbacks in _measure_line).
     """
-    monkeypatch.setattr("PIL.ImageDraw.ImageDraw.textbbox", lambda *a, **k: (_ for _ in ()).throw(AttributeError()))
+    def _raise_attr(*args, **kwargs):
+        raise AttributeError()
+
+    # monkeypatch the ImageDraw.textbbox implementation to always raise
+    monkeypatch.setattr("PIL.ImageDraw.ImageDraw.textbbox", _raise_attr)
+
     bot = mod.FortuneBot("tok", "@c")
     png = bot.render_image("fallback path")
     assert png[:8] == b"\x89PNG\r\n\x1a\n"
