@@ -46,6 +46,7 @@ Small, dependency-injectable Python bot that:
 
 - `python3` (3.11+ recommended)
 - `python3-venv` (optional)
+- `pillow` / `python3-pillow` (must be installed locally to run even in venv, otherwise won't render)
 - `fortune-mod` / `cowsay` (optional for pipeline output — tests inject runners)
 - `fonts-dejavu-core` (recommended — ensures good monospace font)
 - `coreutils` and `bsdmainutils` or other packages providing `shuf`/`fmt` (commonly available on Debian/Ubuntu/Raspbian)
@@ -146,7 +147,27 @@ pytest -q
 
 ## Scheduling (systemd recommended)
 
-Create `/etc/systemd/system/fortune-bot.service`:
+Create a variables file `/etc/fortunesandart.env` to make the vars permanent across reboots:
+```commandline
+TELEGRAM_BOT_TOKEN="123456:ABCDEF..."
+TELEGRAM_CHAT_ID="@your_channel_or_numeric_id"
+```
+
+Ensure correct ownership and permissions:
+```commandline
+sudo chown root:root /etc/fortunesandart.env
+sudo chmod 600 /etc/fortunesandart.env
+```
+
+Create a bash launcher file, for example, `~/fortunesandart_launcher.sh`:
+```commandline
+!bin/bash
+set -e
+source /etc/fortunesandart.env
+cd /path/to/folder/fortunesandart && source .venv/bin/activate && cd /path/to/folder/fortunesandart/src && exec python3 main.py
+```
+
+Create `/etc/systemd/system/fortunesandart.service`:
 
 ```commandline
 [Unit]
@@ -154,14 +175,12 @@ Description=FortunesAndArtBot - post daily fortune image
 
 [Service]
 Type=oneshot
-User=pi
-WorkingDirectory=/path/to/your/repo
-Environment=TELEGRAM_BOT_TOKEN=123:ABC...
-Environment=TELEGRAM_CHAT_ID=@yourchannel
-ExecStart=/path/to/venv/bin/python src/main.py
+EnvironmentFile=/etc/fortunesandart.env
+Environment="PATH=/usr/games:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" # is needed to correctly point to the executables used, like cowsay
+ExecStart=/bin/bash ~/fortunesandart_launcher.sh
 ```
 
-Create `/etc/systemd/system/fortune-bot.timer`:
+Create `/etc/systemd/system/fortunesandart.timer`:
 
 ```commandline
 [Unit]
@@ -177,7 +196,7 @@ WantedBy=timers.target
 
 Enable & start:
 ```commandline
-sudo systemctl enable --now fortune-bot.timer
+sudo systemctl enable --now fortunesandart.timer
 ```
 
 ### Cron alternative
