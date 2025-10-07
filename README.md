@@ -48,6 +48,7 @@ Small, dependency-injectable Python bot that:
 - `python3-venv` (optional)
 - `pillow` / `python3-pillow` (must be installed locally to run even in venv, otherwise won't render)
 - `fortune-mod` / `cowsay` (optional for pipeline output — tests inject runners)
+- `fortune`'s expansion packs on your distro (optional)
 - `fonts-dejavu-core` (recommended — ensures good monospace font)
 - `coreutils` and `bsdmainutils` or other packages providing `shuf`/`fmt` (commonly available on Debian/Ubuntu/Raspbian)
 
