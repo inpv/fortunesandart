@@ -44,7 +44,7 @@ Small, dependency-injectable Python bot that:
 
 ### System packages (Debian / Raspbian)
 
-- `python3` (3.11+ recommended)
+- `python3` (3.11+ recommended, don't forget to recreate .venv and reinstall packages after major Python version updates)
 - `python3-venv` (optional)
 - `pillow` / `python3-pillow` (must be installed locally to run even in venv, otherwise won't render)
 - `fortune-mod` / `cowsay` (optional for pipeline output — tests inject runners)
