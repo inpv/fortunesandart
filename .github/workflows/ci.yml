@@ -101,5 +101,5 @@ jobs:
             fi
 
             cp -r /tmp/github-actions-allure-results/$PROJECT_NAME/* $RESULTS_DIR/ 2>/dev/null || true
-            curl -X POST 'http://localhost:5050/send-results?project_id=$PROJECT_NAME"
+            curl -X POST "http://localhost:5050/send-results?project_id=$PROJECT_NAME"
             echo "Allure results deployed and report generated on server for $PROJECT_NAME"
