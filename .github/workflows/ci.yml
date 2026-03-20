@@ -78,6 +78,7 @@ jobs:
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
           key: ${{ secrets.SSH_PI3_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PI3_PORT }}
           script: |
             PROJECT_NAME=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
             echo "Deploying project: $PROJECT_NAME"
