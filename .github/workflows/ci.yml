@@ -72,6 +72,9 @@ jobs:
     if: success()
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Deploy code + Allure results to Pi server, then generate a report in respected folder
         uses: appleboy/ssh-action@v1.0.3
         with:
