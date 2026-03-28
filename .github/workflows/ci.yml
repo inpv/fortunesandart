@@ -82,7 +82,7 @@ jobs:
           port: ${{ secrets.SSH_PI3_PORT }}
           script: |
             cd /opt/fortune_bot/fortunesandart
-            git pull origin main
+            git pull origin master
             echo "Deployed commit $(git rev-parse --short HEAD)"
             echo "Code deployed on server"
             echo "Allure results and report generated on server"
