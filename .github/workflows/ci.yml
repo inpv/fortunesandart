@@ -69,7 +69,7 @@ jobs:
 
   deploy:
     needs: [test, publish-allure]
-    if: ${{ success() && github.ref == 'refs/heads/main' && github.repository == 'inpv/fortunesandart' }}
+    if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
       - uses: actions/checkout@v4
@@ -81,11 +81,8 @@ jobs:
           key: ${{ secrets.SSH_PI3_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PI3_PORT }}
           script: |
-            PROJECT_NAME=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
-            echo "Deploying project: $PROJECT_NAME"
-            
             cd /opt/fortune_bot/fortunesandart
             git pull origin main
             echo "Deployed commit $(git rev-parse --short HEAD)"
-            echo "Code for $PROJECT_NAME deployed on server"
-            echo "Allure results and report generated on server for $PROJECT_NAME"
+            echo "Code deployed on server"
+            echo "Allure results and report generated on server"
