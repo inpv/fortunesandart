@@ -35,7 +35,7 @@ jobs:
         with:
           name: allure-results
           path: ./artifacts/allure-results
-          
+
   publish-allure:
     needs: test
     runs-on: ubuntu-latest
@@ -83,5 +83,6 @@ jobs:
           script: |
             cd /opt/fortune_bot/fortunesandart
             git pull origin master
+            sudo systemctl daemon-reload
             echo "Deployed commit $(git rev-parse --short HEAD)"
             echo "Code deployed to prod"
