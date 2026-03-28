@@ -66,3 +66,60 @@ jobs:
         with:
           name: allure-report-html
           path: ./allure-report
+
+  retest-and-deploy:
+    needs: [test, publish-allure]
+    if: ${{ success() && github.ref == 'refs/heads/main' && github.repository == 'inpv/fortunesandart' && github.event_name == 'push'}}
+    runs-on: [ self-hosted, linux, X64 ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install & run tests on self-hosted runner
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install -r requirements.txt
+          pip install allure-pytest allure-python-commons pytest
+          
+          # Create or use the dir for results by project
+          PROJECT_NAME=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+          PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
+          RESULTS_DIR=$PROJECT_DIR/allure-results
+            
+          if [ -d "$PROJECT_DIR" ]; then
+              echo "Project folder exists, proceeding..."
+          else
+              echo "Project folder missing, creating $PROJECT_DIR"
+              mkdir -p $RESULTS_DIR
+          fi
+
+          # Run pytest and generate Allure results locally
+          pytest -q --alluredir=$RESULTS_DIR
+
+      - name: Send Allure results to local server
+        run: |
+          # Use Allure Docker Service API to upload results
+          curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME" \
+            -F "files[]=@${{ github.workspace }}/allure-results/*"
+
+      - name: Deploy to Raspberry Pi
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_PI3_HOST }}
+          username: ${{ secrets.SSH_PI3_USER }}
+          key: ${{ secrets.SSH_PI3_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PI3_PORT }}
+          script: |
+            PROJECT_NAME=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+            echo "Deploying project: $PROJECT_NAME"
+            
+            cd /opt/fortune_bot/fortunesandart
+            git pull origin main
+            echo "Deployed commit $(git rev-parse --short HEAD)"
+            echo "Code for $PROJECT_NAME deployed on server"
+            echo "Allure results and report generated on server for $PROJECT_NAME"
