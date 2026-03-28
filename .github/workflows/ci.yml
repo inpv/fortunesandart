@@ -73,7 +73,7 @@ jobs:
     runs-on: [ self-hosted, linux, X64 ]
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy to Raspberry Pi
+      - name: Deploy to prod
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_PI3_HOST }}
@@ -84,5 +84,4 @@ jobs:
             cd /opt/fortune_bot/fortunesandart
             git pull origin master
             echo "Deployed commit $(git rev-parse --short HEAD)"
-            echo "Code deployed on server"
-            echo "Allure results and report generated on server"
+            echo "Code deployed to prod"
