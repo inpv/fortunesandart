@@ -67,9 +67,9 @@ jobs:
           name: allure-report-html
           path: ./allure-report
 
-  retest-and-deploy:
+  deploy:
     needs: [test, publish-allure]
-    if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
+    if: ${{ success() && github.ref == 'refs/heads/main' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
       - uses: actions/checkout@v4
