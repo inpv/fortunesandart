@@ -69,7 +69,7 @@ jobs:
 
   retest-and-deploy:
     needs: [test, publish-allure]
-    if: ${{ success() && github.ref == 'refs/heads/main' && github.repository == 'inpv/fortunesandart' && github.event_name == 'push'}}
+    if: ${{ && github.ref == 'refs/heads/main' && github.repository == 'inpv/fortunesandart' && github.event_name == 'push'}}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
       - uses: actions/checkout@v4
