@@ -96,8 +96,7 @@ jobs:
         run: |
           # Use Allure Docker Service API to upload results
           PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
-          curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME" \
-            -F "files[]=@$RESULTS_DIR/*"
+          curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME"
 
       - uses: actions/checkout@v4
       - name: Deploy to prod
