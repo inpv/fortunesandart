@@ -72,12 +72,6 @@ jobs:
     if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13.5'
-
       - name: Install & run tests on self-hosted runner
         run: |
           PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
@@ -103,7 +97,7 @@ jobs:
           # Use Allure Docker Service API to upload results
           PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
           curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME" \
-            -F "files[]=@${{ github.workspace }}/allure-results/*"
+            -F "files[]=@$RESULTS_DIR/*"
 
       - uses: actions/checkout@v4
       - name: Deploy to prod
