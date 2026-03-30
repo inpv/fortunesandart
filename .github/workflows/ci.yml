@@ -96,8 +96,25 @@ jobs:
         run: |
           # Use Allure Docker Service API to upload results
           PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
+          PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
+          RESULTS_DIR=$PROJECT_DIR/allure-results
+          
+          # Build the list of -F arguments for every file in the results directory
+          FILES=""
+          for file in "$RESULTS_DIR"/*; do
+            if [ -f "$file" ]; then
+              FILES="$FILES -F files[]=@$file"
+            fi
+          done
+          
+          if [ -z "$FILES" ]; then
+            echo "No files found in $RESULTS_DIR - nothing to send"
+            exit 1
+          fi
+          
           curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME" \
-            -F "files[]=@${{ github.workspace }}/allure-results/*"
+            $FILES \
+            --fail --silent --show-error"
 
       - uses: actions/checkout@v4
       - name: Deploy to prod
