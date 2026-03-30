@@ -98,7 +98,7 @@ jobs:
           PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
           PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
           RESULTS_DIR=$PROJECT_DIR/allure-results
-          echo "pwd"
+          echo "$pwd"
           
           cd $RESULTS_DIR
           # Upload each JSON file
