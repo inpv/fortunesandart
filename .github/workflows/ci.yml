@@ -114,7 +114,7 @@ jobs:
           
           curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME" \
             $FILES \
-            --fail --silent --show-error"
+            --fail --silent --show-error
 
       - uses: actions/checkout@v4
       - name: Deploy to prod
