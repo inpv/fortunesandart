@@ -99,7 +99,7 @@ jobs:
           PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
           RESULTS_DIR=$PROJECT_DIR/allure-results
           
-          cd $GITHUB_WORKSPACE/allure-results
+          cd $RESULTS_DIR
           # Upload each JSON file
           for file in *.json; do
             echo "Uploading $file"
