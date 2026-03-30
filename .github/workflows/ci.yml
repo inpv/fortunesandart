@@ -104,7 +104,7 @@ jobs:
           # Upload each JSON file
           for file in *.json; do
             echo "Uploading $file"
-            curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME" \
+            curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME&force_project_creation=true" \
                  -H "Content-Type: multipart/form-data" \
                  -F "files[]=@$file"
           done
