@@ -71,7 +71,7 @@ jobs:
     needs: [test, publish-allure]
     if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
-    container: python:3.11-slim
+    container: python:3.11
     steps:
       - name: Install & run tests on self-hosted runner
         run: |
