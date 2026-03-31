@@ -67,10 +67,11 @@ jobs:
           name: allure-report-html
           path: ./allure-report
 
-  deploy:
+  retest-and-deploy:
     needs: [test, publish-allure]
     if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
+    container: python:3.11-slim
     steps:
       - name: Install & run tests on self-hosted runner
         run: |
