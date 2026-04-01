@@ -39,7 +39,6 @@ jobs:
   publish-allure:
     needs: test
     runs-on: ubuntu-latest
-    if: success()
     steps:
       - uses: actions/checkout@v4
 
