@@ -1,4 +1,5 @@
 import io
+import sys
 import html
 import pytest
 import requests
@@ -236,3 +237,15 @@ def test_image_and_caption_separation(request, monkeypatch):
     url, data, _ = fake.calls[0]
     assert "sendPhoto" in url
     assert "Your fortune cookie for the day. Epoch time: 1234567890" in data["caption"]
+
+
+def test_supported_python_version():
+    """
+    Fail if running on an unsupported Python version.
+    """
+    min_version = (3, 11)
+    assert sys.version_info >= min_version, (
+        f"Python {sys.version_info} is too old. "
+        f"Minimum supported is {min_version[0]}.{min_version[1]}+"
+    )
+    assert sys.version_info < (3, 12), "Tested only up to Python 3.12"
