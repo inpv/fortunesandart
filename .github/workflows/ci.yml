@@ -70,7 +70,7 @@ jobs:
 
   copy-allure-and-deploy:
     needs: [test, publish-allure]
-    if: ${{ github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
+    if: ${{ always() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
       - name: Prepare Allure directories and set env vars on self-hosted runner
