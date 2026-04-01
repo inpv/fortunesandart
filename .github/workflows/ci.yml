@@ -70,7 +70,7 @@ jobs:
 
   copy-allure-and-deploy:
     needs: [test, publish-allure]
-    if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
+    if: ${{ github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
       - name: Prepare Allure directories and set env vars on self-hosted runner
@@ -131,6 +131,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Deploy to prod
         uses: appleboy/ssh-action@master
+        if: success()
         with:
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
