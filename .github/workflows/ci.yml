@@ -32,6 +32,7 @@ jobs:
 
       - name: Upload allure-results artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: allure-results
           path: ./artifacts/allure-results
@@ -39,6 +40,7 @@ jobs:
   publish-allure:
     needs: test
     runs-on: ubuntu-latest
+    if: ${{ always() }}
     steps:
       - uses: actions/checkout@v4
 
