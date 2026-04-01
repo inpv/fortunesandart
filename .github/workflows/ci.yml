@@ -111,7 +111,7 @@ jobs:
           PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
           PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
           RESULTS_DIR=$PROJECT_DIR/allure-results
-          EXEC_NAME="Allure Docker Service API"
+          EXEC_NAME="Github Actions runner"
 
           cd $RESULTS_DIR
           # Upload each JSON file
@@ -133,7 +133,7 @@ jobs:
           key: ${{ secrets.SSH_PI3_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PI3_PORT }}
           script: |
-            cd /opt/fortune_bot/fortunesandart
+            cd ${{ secrets.DEPLOY_PATH }}
             git pull origin master
             sudo systemctl daemon-reload
             echo "Deployed commit $(git rev-parse --short HEAD)"
