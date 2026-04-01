@@ -1,4 +1,4 @@
-name: CI — pytest + Allure + Deploy to Pi
+name: CI — pytest + Allure + Deploy to prod
 
 on:
   push:
@@ -72,13 +72,16 @@ jobs:
     if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
-      - name: Prepare Allure results & report directories on self-hosted runner
+      - name: Prepare Allure directories and set env vars on self-hosted runner
         run: |
+          echo "Setting up directories and names"
           PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
           PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
           RESULTS_DIR=$PROJECT_DIR/allure-results
           REPORTS_DIR=$PROJECT_DIR/allure-reports
+          EXEC_NAME="Github Actions runner"
           
+          echo "Checking if project folder exists"
           if [ -d "$PROJECT_DIR" ]; then
               echo "Project folder exists, proceeding..."
           else
@@ -87,11 +90,15 @@ jobs:
               mkdir -p $REPORTS_DIR
           fi
           
+          echo "Creating clean slate"
           rm -rf "$RESULTS_DIR"/*
           rm -rf "$REPORTS_DIR"/*
 
+          echo "Setting up env vars"
           echo "RESULTS_DIR=$RESULTS_DIR" >> $GITHUB_ENV
           echo "REPORTS_DIR=$REPORTS_DIR" >> $GITHUB_ENV
+          echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
+          echo "EXEC_NAME=$EXEC_NAME" >> $GITHUB_ENV
 
       - name: Download allure-results artifact (raw JSON test results)
         uses: actions/download-artifact@v4
@@ -107,22 +114,18 @@ jobs:
 
       - name: Send Allure results to local server
         run: |
-          # Use Allure Docker Service API to upload results
-          PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
-          PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
-          RESULTS_DIR=$PROJECT_DIR/allure-results
-          EXEC_NAME="Github Actions runner"
+          # Use Allure Docker Service API to upload results, otherwise the container with monitoring off won't pick them
 
-          cd $RESULTS_DIR
-          # Upload each JSON file
+          cd ${{ env.RESULTS_DIR }}
+
           for file in *.json; do
             echo "Uploading $file"
-            curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=$PROJECT_NAME&force_project_creation=true" \
+            curl -X POST "http://localhost:5050/allure-docker-service/send-results?project_id=${{ env.PROJECT_NAME }}&force_project_creation=true" \
                  -H "Content-Type: multipart/form-data" \
                  -F "files[]=@$file"
           done
 
-          curl -X GET "http://localhost:5050/allure-docker-service/generate-report?project_id=$PROJECT_NAME&execution_name=${EXEC_NAME// /%20}"
+          curl -X GET "http://localhost:5050/allure-docker-service/generate-report?project_id=${{ env.PROJECT_NAME }}&execution_name=${EXEC_NAME// /%20}"
 
       - uses: actions/checkout@v4
       - name: Deploy to prod
@@ -137,4 +140,4 @@ jobs:
             git pull origin master
             sudo systemctl daemon-reload
             echo "Deployed commit $(git rev-parse --short HEAD)"
-            echo "Code deployed to prod"
+            echo "Code for ${{ env.PROJECT_NAME }} deployed to prod"
