@@ -67,31 +67,40 @@ jobs:
           name: allure-report-html
           path: ./allure-report
 
-  retest-and-deploy:
+  copy-allure-and-deploy:
     needs: [test, publish-allure]
     if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
-    container: python:3.11
     steps:
-      - name: Install & run tests on self-hosted runner
+      - name: Prepare Allure results & report directories on self-hosted runner
         run: |
           PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
           PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
           RESULTS_DIR=$PROJECT_DIR/allure-results
+          REPORTS_DIR=$PROJECT_DIR/allure-reports
           
           if [ -d "$PROJECT_DIR" ]; then
               echo "Project folder exists, proceeding..."
           else
               echo "Project folder missing, creating $PROJECT_DIR"
               mkdir -p $RESULTS_DIR
+              mkdir -p $REPORTS_DIR
           fi
 
-          python3 -m venv .venv
-          . .venv/bin/activate
-          pip install -r requirements.txt
-          pip install allure-pytest pytest
-          # Run pytest and generate Allure results locally
-          pytest -q --alluredir=$RESULTS_DIR
+          echo "RESULTS_DIR=$RESULTS_DIR" >> $GITHUB_ENV
+          echo "REPORTS_DIR=$REPORTS_DIR" >> $GITHUB_ENV
+
+      - name: Download allure-results artifact (raw JSON test results)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: ${{ env.RESULTS_DIR }}
+
+      - name: Download allure-report-html artifact (pre-generated HTML report)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-html
+          path: ${{ env.REPORTS_DIR }}
 
       - name: Send Allure results to local server
         run: |
