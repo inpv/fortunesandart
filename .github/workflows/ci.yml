@@ -68,7 +68,7 @@ jobs:
           name: allure-report-html
           path: ./allure-report
 
-  copy-allure-and-deploy:
+  copy-allure:
     needs: [test, publish-allure]
     if: ${{ always() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
@@ -128,10 +128,14 @@ jobs:
 
           curl -X GET "http://localhost:5050/allure-docker-service/generate-report?project_id=${{ env.PROJECT_NAME }}&execution_name=${EXEC_NAME// /%20}"
 
+  deploy:
+    needs: [ test, publish-allure, copy-allure ]
+    if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
+    runs-on: [ self-hosted, linux, X64 ]
+    steps:
       - uses: actions/checkout@v4
       - name: Deploy to prod
         uses: appleboy/ssh-action@master
-        if: success()
         with:
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
@@ -140,6 +144,5 @@ jobs:
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
             git pull origin master
-            sudo systemctl daemon-reload
             echo "Deployed commit $(git rev-parse --short HEAD)"
             echo "Code for ${{ env.PROJECT_NAME }} deployed to prod"
