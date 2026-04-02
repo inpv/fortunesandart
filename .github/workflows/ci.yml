@@ -13,7 +13,7 @@ jobs:
     if: ${{ github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     outputs:
-      python-version: ${{ steps.get-version.outputs.stdout }}
+      python-version: ${{ steps.extract.outputs.python-version }}
     steps:
       - name: Get Python version from prod
         id: get-version
@@ -25,18 +25,26 @@ jobs:
           port: ${{ secrets.SSH_PI3_PORT }}
           capture_stdout: true
           script: |
-            echo "===PYTHON_VERSION_START==="
+            echo "===VERSION_START==="
             python3 -c "
             import sys
-            print(f'{sys.version_info.major}.{sys.version_info.minor}')
+            print(f'{sys.version_info.major}.{sys.version_info.minor}', end='')
             " 2>/dev/null || echo "3.11"
-            echo "===PYTHON_VERSION_END==="
+            echo "===VERSION_END==="
 
       - name: Extract clean Python version
         id: extract
         run: |
-          VERSION=$(echo "${{ steps.get-version.outputs.stdout }}" | sed -n 's/.*===PYTHON_VERSION_START===\(.*\)===PYTHON_VERSION_END===.*/\1/p')
-          echo "python-version=${VERSION}" >> $GITHUB_OUTPUT
+          RAW="${{ steps.get-version.outputs.stdout }}"
+          # Extract everything between the markers and clean it
+          VERSION=$(echo "$RAW" | sed -n 's/.*===VERSION_START===\(.*\)===VERSION_END===.*/\1/p' | tr -d ' \t\n\r')
+          
+          if [ -z "$VERSION" ]; then
+            VERSION="3.11"   # fallback
+          fi
+          
+          echo "Detected Python version on prod: $VERSION"
+          echo "python-version=$VERSION" >> $GITHUB_OUTPUT
 
   test:
     needs: get-prod-python-version
