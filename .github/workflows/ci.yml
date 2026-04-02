@@ -34,7 +34,7 @@ jobs:
         id: set-output
         run: |
           # Trim any stray whitespace/newlines just to be safe
-          VERSION=$(echo "${{ steps.get-version.outputs.stdout }}" | tr -d '[:space:]')
+          VERSION=$$   (echo "   $${{ steps.get-version.outputs.stdout }}" | head -n1 | tr -d '[:space:]')
           echo "python-version=$VERSION" >> $GITHUB_OUTPUT
           echo "Prod Python version detected: $VERSION"
 
