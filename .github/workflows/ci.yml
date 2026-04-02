@@ -149,6 +149,7 @@ jobs:
             git pull origin master
             echo "Deployed commit $(git rev-parse --short HEAD)"
             echo "Code for ${{ env.PROJECT_NAME }} deployed to prod"
+            sudo systemctl status ${{ secrets.SERVICE_NAME }} --no-pager
 
   daily-run:
     needs: [ test, publish-allure, copy-allure ]
