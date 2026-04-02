@@ -12,10 +12,9 @@ jobs:
   get-prod-python-version:
     runs-on: [ self-hosted, linux, X64 ]
     outputs:
-      python-version: ${{ steps.get-version.outputs.python-version }}
+      python-version: ${{ env.PYTHON_VERSION }}
     steps:
       - name: Get Python version from prod
-        id: get-version
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_PI3_HOST }}
@@ -25,7 +24,7 @@ jobs:
           script: |
             # Get the clean major.minor version that setup-python expects
             PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "3.11")
-            echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+            echo "python-version=$PYTHON_VERSION" >> $GITHUB_ENV
             echo "Detected Python version on prod: $PYTHON_VERSION"
 
   test:
