@@ -25,11 +25,18 @@ jobs:
           port: ${{ secrets.SSH_PI3_PORT }}
           capture_stdout: true
           script: |
-            # Only output the clean major.minor version — nothing else
+            echo "===PYTHON_VERSION_START==="
             python3 -c "
             import sys
-            print(f'{sys.version_info.major}.{sys.version_info.minor}', end='')
+            print(f'{sys.version_info.major}.{sys.version_info.minor}')
             " 2>/dev/null || echo "3.11"
+            echo "===PYTHON_VERSION_END==="
+
+      - name: Extract clean Python version
+        id: extract
+        run: |
+          VERSION=$(echo "${{ steps.get-version.outputs.stdout }}" | sed -n 's/.*===PYTHON_VERSION_START===\(.*\)===PYTHON_VERSION_END===.*/\1/p')
+          echo "python-version=${VERSION}" >> $GITHUB_OUTPUT
 
   test:
     needs: get-prod-python-version
