@@ -4,6 +4,9 @@ on:
   push:
     branches: [ "**" ]
   pull_request:
+  schedule:
+    - cron: '0 3 * * *'      # 03:00 UTC daily
+  workflow_dispatch:         # just in case
 
 jobs:
   test:
@@ -146,3 +149,21 @@ jobs:
             git pull origin master
             echo "Deployed commit $(git rev-parse --short HEAD)"
             echo "Code for ${{ env.PROJECT_NAME }} deployed to prod"
+
+  daily-run:
+    needs: [ test, publish-allure, copy-allure ]
+    if: ${{ success() && github.repository == 'inpv/fortunesandart' && github.event_name == 'schedule' }}
+    runs-on: [ self-hosted, linux, X64 ]
+    steps:
+      - name: Trigger daily launcher on prod (after successful tests)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_PI3_HOST }}
+          username: ${{ secrets.SSH_PI3_USER }}
+          key: ${{ secrets.SSH_PI3_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PI3_PORT }}
+          script: |
+            echo "=== CI tests passed → launching daily fortune bot ==="
+            sudo systemctl start ${{ secrets.SERVICE_NAME }}
+            echo "Daily bot run completed at $(date --utc)"
+            sudo systemctl status ${{ secrets.SERVICE_NAME }} --no-pager
