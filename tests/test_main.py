@@ -248,4 +248,4 @@ def test_supported_python_version():
         f"Python {sys.version_info} is too old. "
         f"Minimum supported is {min_version[0]}.{min_version[1]}+"
     )
-    assert sys.version_info < (3, 12), "Tested only up to Python 3.12"
+    assert sys.version_info < (3, 13), "Tested only up to Python 3.13"

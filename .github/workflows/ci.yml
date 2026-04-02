@@ -28,6 +28,7 @@ jobs:
             echo "Detected Python version on prod: $PYTHON_VERSION"
 
   test:
+    needs: get-prod-python-version
     runs-on: ubuntu-latest
 
     steps:
