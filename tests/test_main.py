@@ -244,8 +244,13 @@ def test_supported_python_version():
     Fail if running on an unsupported Python version.
     """
     min_version = (3, 11)
+    max_version = (3, 14)
+
     assert sys.version_info >= min_version, (
         f"Python {sys.version_info} is too old. "
         f"Minimum supported is {min_version[0]}.{min_version[1]}+"
     )
-    assert sys.version_info <= (3, 13), "Tested only up to Python 3.13 included"
+    assert sys.version_info < max_version, (
+        f"Python {sys.version_info} is too new. "
+        f"Tested only up to Python {max_version[0]}.{max_version[1] - 1} included"
+    )
