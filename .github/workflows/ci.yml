@@ -13,7 +13,7 @@ jobs:
     if: ${{ github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     outputs:
-      python-version: ${{ steps.get-version.outputs.python-version }}
+      python-version: ${{ steps.set-output.outputs.python-version }}
 
     steps:
       - name: Get Python version from prod
@@ -26,10 +26,17 @@ jobs:
           port: ${{ secrets.SSH_PI3_PORT }}
           capture_stdout: true
           script: |
-            # Get the clean major.minor version that setup-python expects
+            # Print ONLY the clean major.minor version to stdout
             PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "3.11")
-            echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
-            echo "Detected Python version on prod: $PYTHON_VERSION"
+            echo "$PYTHON_VERSION"
+
+      - name: Set job output from captured stdout
+        id: set-output
+        run: |
+          # Trim any stray whitespace/newlines just to be safe
+          VERSION=$(echo "${{ steps.get-version.outputs.stdout }}" | tr -d '[:space:]')
+          echo "python-version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Prod Python version detected: $VERSION"
 
   test:
     needs: get-prod-python-version
