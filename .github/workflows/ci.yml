@@ -26,11 +26,10 @@ jobs:
           port: ${{ secrets.SSH_PI3_PORT }}
           capture_stdout: true
           script: |
-            # Output ONLY the version with very clear markers (no extra text)
             echo "===VERSION_START==="
             python3 -c '
               import sys
-              print(f"{sys.version_info.major}.{sys.version_info.minor}", end="")
+              print(f"{sys.version_info.major}.{sys.version_info.minor}")
             ' 2>/dev/null || echo "3.11"
             echo "===VERSION_END==="
 
@@ -38,18 +37,21 @@ jobs:
         id: extract
         run: |
           RAW="${{ steps.get-version.outputs.stdout }}"
-          echo "Raw stdout received:"
+
+          echo "=== RAW STDOUT START ==="
           echo "$RAW"
+          echo "=== RAW STDOUT END ==="
 
-          VERSION=$(echo "$RAW" | sed -n 's/.*===VERSION_START===\([^=]*\)===VERSION_END===.*/\1/p' | tr -d ' \t\n\r')
+          # More robust extraction: take the first line that looks like a version (X.Y)
+          VERSION=$(echo "$RAW" | grep -oE '[0-9]+\.[0-9]+' | head -n 1)
 
-          # Fallback if extraction failed
           if [ -z "$VERSION" ]; then
             VERSION="3.11"
-            echo "Warning: Could not extract version, falling back to 3.11"
+            echo "Warning: Could not extract version from output, falling back to 3.11"
+          else
+            echo "Successfully extracted Python version: $VERSION"
           fi
 
-          echo "Detected Python version on prod: $VERSION"
           echo "python-version=$VERSION" >> $GITHUB_OUTPUT
 
   test:
