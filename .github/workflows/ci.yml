@@ -27,7 +27,7 @@ jobs:
           script: |
             # Get the clean major.minor version that setup-python expects
             PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "3.11")
-            echo "python-version=${PYTHON_VERSION}"
+            echo "$PYTHON_VERSION"
 
   test:
     needs: get-prod-python-version
