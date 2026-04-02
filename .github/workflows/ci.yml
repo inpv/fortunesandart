@@ -13,7 +13,7 @@ jobs:
     if: ${{ github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     outputs:
-      python-version: ${{ steps.extract.outputs.python-version }}
+      python-version: ${{ steps.get-version.outputs.python-version }}
 
     steps:
       - name: Get Python version from prod
@@ -26,33 +26,10 @@ jobs:
           port: ${{ secrets.SSH_PI3_PORT }}
           capture_stdout: true
           script: |
-            echo "===VERSION_START==="
-            python3 -c '
-              import sys
-              print(f"{sys.version_info.major}.{sys.version_info.minor}")
-            ' 2>/dev/null || echo "3.11"
-            echo "===VERSION_END==="
-
-      - name: Extract clean Python version
-        id: extract
-        run: |
-          RAW="${{ steps.get-version.outputs.stdout }}"
-
-          echo "=== RAW STDOUT START ==="
-          echo "$RAW"
-          echo "=== RAW STDOUT END ==="
-
-          # More robust extraction: take the first line that looks like a version (X.Y)
-          VERSION=$(echo "$RAW" | grep -oE '[0-9]+\.[0-9]+' | head -n 1)
-
-          if [ -z "$VERSION" ]; then
-            VERSION="3.11"
-            echo "Warning: Could not extract version from output, falling back to 3.11"
-          else
-            echo "Successfully extracted Python version: $VERSION"
-          fi
-
-          echo "python-version=$VERSION" >> $GITHUB_OUTPUT
+            # Get the clean major.minor version that setup-python expects
+            PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "3.11")
+            echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+            echo "Detected Python version on prod: $PYTHON_VERSION"
 
   test:
     needs: get-prod-python-version
