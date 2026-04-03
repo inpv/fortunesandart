@@ -1,4 +1,4 @@
-name: CI — pytest + Allure + Deploy to prod
+name: CI — pytest + Allure + Deploy to prod + daily run with tests
 
 on:
   push:
@@ -168,7 +168,7 @@ jobs:
 
   deploy:
     needs: [ test, publish-allure, copy-allure ]
-    if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
+    if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' && github.event_name != 'schedule' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
       - uses: actions/checkout@v4
