@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Get Python version from prod
         id: get-version
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
@@ -173,7 +173,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to prod
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
@@ -191,7 +191,7 @@ jobs:
     runs-on: [ self-hosted, linux, X64 ]
     steps:
       - name: Trigger daily launcher on prod (after successful tests)
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
