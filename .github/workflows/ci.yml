@@ -20,7 +20,6 @@ jobs:
         id: get-version
         uses: appleboy/ssh-action@master
         with:
-          version: 1.8.4
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
           key: ${{ secrets.SSH_PI3_PRIVATE_KEY }}
@@ -176,7 +175,6 @@ jobs:
       - name: Deploy to prod
         uses: appleboy/ssh-action@master
         with:
-          version: 1.8.4
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
           key: ${{ secrets.SSH_PI3_PRIVATE_KEY }}
@@ -195,7 +193,6 @@ jobs:
       - name: Trigger daily launcher on prod (after successful tests)
         uses: appleboy/ssh-action@master
         with:
-          version: 1.8.4
           host: ${{ secrets.SSH_PI3_HOST }}
           username: ${{ secrets.SSH_PI3_USER }}
           key: ${{ secrets.SSH_PI3_PRIVATE_KEY }}
