@@ -102,6 +102,13 @@ jobs:
           name: allure-report-html
           path: ./allure-report
 
+      - name: Restore workspace ownership to runner user
+        if: always()
+        run: |
+          RUNNER_UID=$(stat -c '%u' "$(dirname "$GITHUB_WORKSPACE")")
+          RUNNER_GID=$(stat -c '%g' "$(dirname "$GITHUB_WORKSPACE")")
+          chown -R "$RUNNER_UID:$RUNNER_GID" "$GITHUB_WORKSPACE"
+
   copy-allure:
     needs: test-container
     if: ${{ always() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
