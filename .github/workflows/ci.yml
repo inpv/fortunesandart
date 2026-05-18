@@ -169,7 +169,7 @@ jobs:
           curl -X GET "http://localhost:5050/allure-docker-service/generate-report?project_id=${{ env.PROJECT_NAME }}&execution_name=${EXEC_NAME// /%20}"
 
   deploy:
-    needs: [ test, publish-allure, copy-allure ]
+    needs: [ test-container, copy-allure ]
     if: ${{ success() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' && github.event_name != 'schedule' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
@@ -188,7 +188,7 @@ jobs:
             echo "Code for ${{ needs.copy-allure.outputs.PROJECT_NAME }} deployed to prod"
 
   daily-run:
-    needs: [ test, publish-allure, copy-allure ]
+    needs: [ test-container, copy-allure ]
     if: ${{ success() && github.repository == 'inpv/fortunesandart' && github.event_name == 'schedule' }}
     runs-on: [ self-hosted, linux, X64 ]
     steps:
