@@ -10,7 +10,7 @@ on:
 
 jobs:
   get-prod-python-version:
-    if: ${{ github.repository == 'inpv/fortunesandart' }}
+    if: ${{ github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     outputs:
       python-version: ${{ steps.set-output.outputs.python-version }}
@@ -37,17 +37,41 @@ jobs:
           echo "python-version=$VERSION" >> $GITHUB_OUTPUT
           echo "Prod Python version detected: $VERSION"
 
-  test:
+  test-container:
     needs: get-prod-python-version
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, linux, X64 ]
+    if: ${{ github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
+    container:
+      image: python:${{ needs.get-prod-python-version.outputs.python-version }}
+      options: --user root
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ needs.get-prod-python-version.outputs.python-version }}
+      - name: Install system dependencies (git + ca-certificates) with HTTPS mirrors
+        run: |
+          # Switch to HTTPS mirrors (works for both classic sources.list and deb822 format)
+          sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/*.sources
+          sed -i 's|http://security.debian.org|https://security.debian.org|g' /etc/apt/sources.list.d/*.sources 2>/dev/null || true
+          
+          apt-get update && apt-get install -y --no-install-recommends git curl unzip openjdk-21-jre-headless
+          
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Install Allure CLI
+        run: |
+          ALLURE_VERSION="2.27.0"
+          curl -sL "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip" \
+               -o /tmp/allure.zip
+          unzip -q /tmp/allure.zip -d /opt
+          ln -s "/opt/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
+          allure --version
+
+      - name: Mark workspace as safe directory for git (fixes root + container ownership issue)
+        run: |
+          git config --global --add safe.directory "$(pwd)"
+          git status --porcelain
+          echo "Git repo root: $(git rev-parse --show-toplevel)"
 
       - name: Create virtualenv & install
         run: |
@@ -69,39 +93,17 @@ jobs:
           name: allure-results
           path: ./artifacts/allure-results
 
-  publish-allure:
-    needs: test
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    steps:
-      - uses: actions/checkout@v4
+      - name: Generate Allure report
+        run: allure generate ./allure-results -o ./allure-report --clean
 
-      - name: Download allure-results
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-results
-          path: ./allure-results
-
-      - name: Install allure commandline
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-11-jre
-          wget -q -O /tmp/allure.zip https://github.com/allure-framework/allure2/releases/download/2.21.0/allure-2.21.0.zip
-          unzip -q /tmp/allure.zip -d $HOME/.allure
-          echo "$HOME/.allure/allure-2.21.0/bin" >> $GITHUB_PATH
-
-      - name: Generate Allure report (HTML)
-        run: |
-          allure generate ./allure-results -o ./allure-report --clean
-
-      - name: Upload artifact (HTML)
+      - name: Upload Allure report artifact
         uses: actions/upload-artifact@v4
         with:
           name: allure-report-html
           path: ./allure-report
 
   copy-allure:
-    needs: [test, publish-allure]
+    needs: test-container
     if: ${{ always() && github.ref == 'refs/heads/master' && github.repository == 'inpv/fortunesandart' }}
     runs-on: [ self-hosted, linux, X64 ]
     outputs:
