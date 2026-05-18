@@ -92,6 +92,7 @@ jobs:
         with:
           name: allure-results
           path: ./artifacts/allure-results
+          retention-days: 1
 
       - name: Generate Allure report
         run: allure generate ./allure-results -o ./allure-report --clean
@@ -101,6 +102,7 @@ jobs:
         with:
           name: allure-report-html
           path: ./allure-report
+          retention-days: 1
 
       - name: Restore workspace ownership to runner user
         if: always()
