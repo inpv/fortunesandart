@@ -123,7 +123,7 @@ jobs:
       - name: Prepare Allure directories and set env vars on self-hosted runner
         run: |
           echo "Setting up directories and names"
-          PROJECT_NAME=$(basename `git rev-parse --show-toplevel`)
+          PROJECT_NAME="${{ github.event.repository.name }}"
           PROJECT_DIR="$HOME/allure-server/$PROJECT_NAME"
           RESULTS_DIR=$PROJECT_DIR/allure-results
           REPORTS_DIR=$PROJECT_DIR/allure-reports
