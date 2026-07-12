@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FortuneBot: render command output into a PNG and post via sendPhoto with a standard caption
+FortuneBot: render command output into a PNG and post via sendPhoto with a standard caption.
 """
 import io
 import os
